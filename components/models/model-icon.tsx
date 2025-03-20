@@ -3,7 +3,7 @@ import mistral from "@/public/providers/mistral.png"
 import groq from "@/public/providers/groq.png"
 import perplexity from "@/public/providers/perplexity.png"
 import { ModelProvider } from "@/types"
-import { IconSparkles } from "@tabler/icons-react"
+import { IconFaceId, IconSparkles } from "@tabler/icons-react"
 import { useTheme } from "next-themes"
 import Image from "next/image"
 import { FC, HTMLAttributes } from "react"
@@ -24,6 +24,20 @@ export const ModelIcon: FC<ModelIconProps> = ({
   ...props
 }) => {
   const { theme } = useTheme()
+
+  // Custom JamesBot display
+  if (provider === "openai" && width === 32 && height === 32) {
+    return (
+      <div className={cn(
+        "flex items-center justify-center rounded-sm bg-blue-500 text-white",
+        props.className
+      )}
+      style={{ width: `${width}px`, height: `${height}px` }}
+      >
+        <IconFaceId size={width-8} />
+      </div>
+    )
+  }
 
   switch (provider as ModelProvider) {
     case "openai":

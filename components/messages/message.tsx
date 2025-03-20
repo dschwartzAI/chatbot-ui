@@ -228,7 +228,7 @@ export const Message: FC<MessageProps> = ({
                   />
                 ) : (
                   <WithTooltip
-                    display={<div>{MODEL_DATA?.modelName}</div>}
+                    display={<div>JamesBot</div>}
                     trigger={
                       <ModelIcon
                         provider={modelDetails?.provider || "custom"}
@@ -255,13 +255,7 @@ export const Message: FC<MessageProps> = ({
 
               <div className="font-semibold">
                 {message.role === "assistant"
-                  ? message.assistant_id
-                    ? assistants.find(
-                        assistant => assistant.id === message.assistant_id
-                      )?.name
-                    : selectedAssistant
-                      ? selectedAssistant?.name
-                      : MODEL_DATA?.modelName
+                  ? "JamesBot"
                   : profile?.display_name ?? profile?.username}
               </div>
             </div>

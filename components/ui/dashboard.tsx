@@ -8,7 +8,6 @@ import useHotkey from "@/lib/hooks/use-hotkey"
 import { cn } from "@/lib/utils"
 import { ContentType } from "@/types"
 import { IconChevronCompactRight } from "@tabler/icons-react"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { FC, useState } from "react"
 import { useSelectFileHandler } from "../chat/chat-hooks/use-select-file-handler"
 import { CommandK } from "../utility/command-k"
@@ -22,16 +21,9 @@ interface DashboardProps {
 export const Dashboard: FC<DashboardProps> = ({ children }) => {
   useHotkey("s", () => setShowSidebar(prevState => !prevState))
 
-  const pathname = usePathname()
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const tabValue = searchParams.get("tab") || "chats"
-
   const { handleSelectDeviceFile } = useSelectFileHandler()
 
-  const [contentType, setContentType] = useState<ContentType>(
-    tabValue as ContentType
-  )
+  const [contentType, setContentType] = useState<ContentType>("chats")
   const [showSidebar, setShowSidebar] = useState(
     localStorage.getItem("showSidebar") === "true"
   )
@@ -88,7 +80,6 @@ export const Dashboard: FC<DashboardProps> = ({ children }) => {
             value={contentType}
             onValueChange={tabValue => {
               setContentType(tabValue as ContentType)
-              router.replace(`${pathname}?tab=${tabValue}`)
             }}
           >
             <SidebarSwitcher onContentTypeChange={setContentType} />

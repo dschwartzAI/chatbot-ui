@@ -21,6 +21,8 @@ import {
   processResponse,
   validateChatSettings
 } from "../chat-helpers"
+import { usePineconeKnowledge } from "@/hooks/use-pinecone-knowledge"
+import { v4 as uuidv4 } from "uuid"
 
 export const useChatHandler = () => {
   const router = useRouter()
@@ -70,6 +72,8 @@ export const useChatHandler = () => {
   } = useContext(ChatbotUIContext)
 
   const chatInputRef = useRef<HTMLTextAreaElement>(null)
+
+  const { getPineconeResponse } = usePineconeKnowledge()
 
   useEffect(() => {
     if (!isPromptPickerOpen || !isFilePickerOpen || !isToolPickerOpen) {
@@ -188,12 +192,49 @@ export const useChatHandler = () => {
     }
   }
 
+  const knowledgeBasedAnswer = async (query: string): Promise<string | null> => {
+    try {
+      // Only use Pinecone for question-like queries
+      const isQuestion = query.trim().endsWith("?") || 
+                        query.toLowerCase().includes("what") ||
+                        query.toLowerCase().includes("how") ||
+                        query.toLowerCase().includes("why") ||
+                        query.toLowerCase().includes("when") ||
+                        query.toLowerCase().includes("who");
+      
+      if (!isQuestion) return null;
+      
+      // Try to get response from Pinecone
+      const knowledgeResponse = await getPineconeResponse(query);
+      
+      if (!knowledgeResponse) return null;
+      
+      // Get the content and ensure no references are included
+      let content = knowledgeResponse.choices[0].message.content;
+      
+      // Remove any "References:" section and everything after it
+      const referencesIndex = content.indexOf('References:');
+      if (referencesIndex !== -1) {
+        content = content.substring(0, referencesIndex).trim();
+      }
+      
+      // Also remove any reference patterns like "[1]", "[2]", etc.
+      content = content.replace(/\[\d+\]/g, '');
+      
+      return content;
+      
+    } catch (error) {
+      console.error("Error using Pinecone knowledge:", error);
+      return null;
+    }
+  }
+
   const handleSendMessage = async (
-    messageContent: string,
-    chatMessages: ChatMessage[],
-    isRegeneration: boolean
+    message: string,
+    chatMessages: ChatMessage[] = [],
+    isRegeneration: boolean = false
   ) => {
-    const startingInput = messageContent
+    const startingInput = message
 
     try {
       setUserInput("")
@@ -224,7 +265,7 @@ export const useChatHandler = () => {
         modelData,
         profile,
         selectedWorkspace,
-        messageContent
+        message
       )
 
       let currentChat = selectedChat ? { ...selectedChat } : null
@@ -250,7 +291,7 @@ export const useChatHandler = () => {
 
       const { tempUserChatMessage, tempAssistantChatMessage } =
         createTempMessages(
-          messageContent,
+          message,
           chatMessages,
           chatSettings!,
           b64Images,
@@ -272,69 +313,82 @@ export const useChatHandler = () => {
 
       let generatedText = ""
 
-      if (selectedTools.length > 0) {
-        setToolInUse("Tools")
+      // First try to get an answer from the knowledge base if not regenerating
+      if (!isRegeneration) {
+        const knowledgeAnswer = await knowledgeBasedAnswer(message);
+        if (knowledgeAnswer) {
+          // Use the knowledge base answer instead of generating one
+          generatedText = knowledgeAnswer;
+          setFirstTokenReceived(true);
+        }
+      }
+      
+      // If we got a knowledge answer, we can skip the regular LLM call
+      if (!generatedText) {
+        if (selectedTools.length > 0) {
+          setToolInUse("Tools")
 
-        const formattedMessages = await buildFinalMessages(
-          payload,
-          profile!,
-          chatImages
-        )
-
-        const response = await fetch("/api/chat/tools", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            chatSettings: payload.chatSettings,
-            messages: formattedMessages,
-            selectedTools
-          })
-        })
-
-        setToolInUse("none")
-
-        generatedText = await processResponse(
-          response,
-          isRegeneration
-            ? payload.chatMessages[payload.chatMessages.length - 1]
-            : tempAssistantChatMessage,
-          true,
-          newAbortController,
-          setFirstTokenReceived,
-          setChatMessages,
-          setToolInUse
-        )
-      } else {
-        if (modelData!.provider === "ollama") {
-          generatedText = await handleLocalChat(
+          const formattedMessages = await buildFinalMessages(
             payload,
             profile!,
-            chatSettings!,
-            tempAssistantChatMessage,
-            isRegeneration,
+            chatImages
+          )
+
+          const response = await fetch("/api/chat/tools", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              chatSettings: payload.chatSettings,
+              messages: formattedMessages,
+              selectedTools
+            })
+          })
+
+          setToolInUse("none")
+
+          generatedText = await processResponse(
+            response,
+            isRegeneration
+              ? payload.chatMessages[payload.chatMessages.length - 1]
+              : tempAssistantChatMessage,
+            true,
             newAbortController,
-            setIsGenerating,
             setFirstTokenReceived,
             setChatMessages,
             setToolInUse
           )
         } else {
-          generatedText = await handleHostedChat(
-            payload,
-            profile!,
-            modelData!,
-            tempAssistantChatMessage,
-            isRegeneration,
-            newAbortController,
-            newMessageImages,
-            chatImages,
-            setIsGenerating,
-            setFirstTokenReceived,
-            setChatMessages,
-            setToolInUse
-          )
+          if (modelData!.provider === "ollama") {
+            generatedText = await handleLocalChat(
+              payload,
+              profile!,
+              chatSettings!,
+              tempAssistantChatMessage,
+              isRegeneration,
+              newAbortController,
+              setIsGenerating,
+              setFirstTokenReceived,
+              setChatMessages,
+              setToolInUse
+            )
+          } else {
+            generatedText = await handleHostedChat(
+              payload,
+              profile!,
+              modelData!,
+              tempAssistantChatMessage,
+              isRegeneration,
+              newAbortController,
+              newMessageImages,
+              chatImages,
+              setIsGenerating,
+              setFirstTokenReceived,
+              setChatMessages,
+              setToolInUse
+            )
+          }
         }
       }
 
@@ -343,7 +397,7 @@ export const useChatHandler = () => {
           chatSettings!,
           profile!,
           selectedWorkspace!,
-          messageContent,
+          message,
           selectedAssistant!,
           newMessageFiles,
           setSelectedChat,
@@ -369,7 +423,7 @@ export const useChatHandler = () => {
         currentChat,
         profile!,
         modelData!,
-        messageContent,
+        message,
         generatedText,
         newMessageImages,
         isRegeneration,
