@@ -31,7 +31,7 @@ const ToolsPage: FC<ToolsPageProps> = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-700 mb-4">
+            <p className="mb-4 text-sm text-gray-700">
               The Pinecone integration is configured securely on the server. No API keys are exposed to users.
               Administrators can update the Pinecone configuration through environment variables.
             </p>
