@@ -22,6 +22,7 @@ import {
   validateChatSettings
 } from "../chat-helpers"
 import { usePineconeKnowledge } from "@/hooks/use-pinecone-knowledge"
+import { useOpenAIKnowledge } from "@/hooks/use-openai-knowledge"
 import { v4 as uuidv4 } from "uuid"
 
 export const useChatHandler = () => {
@@ -74,6 +75,7 @@ export const useChatHandler = () => {
   const chatInputRef = useRef<HTMLTextAreaElement>(null)
 
   const { getPineconeResponse } = usePineconeKnowledge()
+  const { getOpenAIResponse } = useOpenAIKnowledge()
 
   useEffect(() => {
     if (!isPromptPickerOpen || !isFilePickerOpen || !isToolPickerOpen) {
@@ -192,40 +194,62 @@ export const useChatHandler = () => {
     }
   }
 
-  const knowledgeBasedAnswer = async (query: string): Promise<string | null> => {
+  const knowledgeBasedAnswer = async (
+    query: string
+  ): Promise<string | null> => {
     try {
-      // Only use Pinecone for question-like queries
-      const isQuestion = query.trim().endsWith("?") || 
-                        query.toLowerCase().includes("what") ||
-                        query.toLowerCase().includes("how") ||
-                        query.toLowerCase().includes("why") ||
-                        query.toLowerCase().includes("when") ||
-                        query.toLowerCase().includes("who");
-      
-      if (!isQuestion) return null;
-      
-      // Try to get response from Pinecone
-      const knowledgeResponse = await getPineconeResponse(query);
-      
-      if (!knowledgeResponse) return null;
-      
-      // Get the content and ensure no references are included
-      let content = knowledgeResponse.choices[0].message.content;
-      
-      // Remove any "References:" section and everything after it
-      const referencesIndex = content.indexOf('References:');
-      if (referencesIndex !== -1) {
-        content = content.substring(0, referencesIndex).trim();
+      console.log("Attempting to use OpenAI knowledge for query:", query)
+
+      // Only use knowledge base for question-like queries
+      const isQuestion =
+        query.trim().endsWith("?") ||
+        query.toLowerCase().includes("what") ||
+        query.toLowerCase().includes("how") ||
+        query.toLowerCase().includes("why") ||
+        query.toLowerCase().includes("when") ||
+        query.toLowerCase().includes("who")
+
+      if (!isQuestion) {
+        console.log("Not a question-like query, skipping knowledge base")
+        return null
       }
-      
-      // Also remove any reference patterns like "[1]", "[2]", etc.
-      content = content.replace(/\[\d+\]/g, '');
-      
-      return content;
-      
+
+      // Try to get response from OpenAI Knowledge API
+      console.log("Querying OpenAI Knowledge API")
+      const knowledgeResponse = await getOpenAIResponse(query)
+
+      if (!knowledgeResponse) {
+        console.log("No response from OpenAI Knowledge API")
+        return null
+      }
+
+      console.log("OpenAI Knowledge API response:", knowledgeResponse)
+
+      // Extract the message content from the response
+      const messageOutput = knowledgeResponse.answer
+
+      if (!messageOutput || messageOutput.length === 0) {
+        console.log("No message content in OpenAI Knowledge API response")
+        return null
+      }
+
+      // For the test endpoint format
+      if (messageOutput[0]?.text) {
+        console.log("Using text from OpenAI Knowledge API response")
+        return messageOutput[0].text
+      }
+
+      // Try fallback for standard endpoint format
+      if (typeof messageOutput === "string") {
+        console.log("Using string from OpenAI Knowledge API response")
+        return messageOutput
+      }
+
+      console.log("Could not extract answer from OpenAI Knowledge API response")
+      return null
     } catch (error) {
-      console.error("Error using Pinecone knowledge:", error);
-      return null;
+      console.error("Error using OpenAI knowledge:", error)
+      return null
     }
   }
 
@@ -315,14 +339,14 @@ export const useChatHandler = () => {
 
       // First try to get an answer from the knowledge base if not regenerating
       if (!isRegeneration) {
-        const knowledgeAnswer = await knowledgeBasedAnswer(message);
+        const knowledgeAnswer = await knowledgeBasedAnswer(message)
         if (knowledgeAnswer) {
           // Use the knowledge base answer instead of generating one
-          generatedText = knowledgeAnswer;
-          setFirstTokenReceived(true);
+          generatedText = knowledgeAnswer
+          setFirstTokenReceived(true)
         }
       }
-      
+
       // If we got a knowledge answer, we can skip the regular LLM call
       if (!generatedText) {
         if (selectedTools.length > 0) {

@@ -28,13 +28,14 @@ export const ModelIcon: FC<ModelIconProps> = ({
   // Custom JamesBot display
   if (provider === "openai" && width === 32 && height === 32) {
     return (
-      <div className={cn(
-        "flex items-center justify-center rounded-sm bg-blue-500 text-white",
-        props.className
-      )}
-      style={{ width: `${width}px`, height: `${height}px` }}
+      <div
+        className={cn(
+          "flex items-center justify-center rounded-sm bg-blue-500 text-white",
+          props.className
+        )}
+        style={{ width: `${width}px`, height: `${height}px` }}
       >
-        <IconFaceId size={width-8} />
+        <IconFaceId size={width - 8} />
       </div>
     )
   }

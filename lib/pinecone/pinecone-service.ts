@@ -14,33 +14,33 @@ export const queryAssistant = async (
     const response = await fetch(
       `https://api.pinecone.io/assistants/${assistantId}/chat`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Api-Key': apiKey,
+          "Content-Type": "application/json",
+          "Api-Key": apiKey
         },
         body: JSON.stringify({
           messages: [
             {
-              role: 'user',
-              content: query,
-            },
-          ],
-        }),
+              role: "user",
+              content: query
+            }
+          ]
+        })
       }
-    );
+    )
 
     if (!response.ok) {
-      throw new Error(`Failed to query assistant: ${response.statusText}`);
+      throw new Error(`Failed to query assistant: ${response.statusText}`)
     }
 
-    const data = await response.json();
-    return data;
+    const data = await response.json()
+    return data
   } catch (error) {
-    console.error('Error querying Pinecone assistant:', error);
-    throw error;
+    console.error("Error querying Pinecone assistant:", error)
+    throw error
   }
-};
+}
 
 // Function to retrieve context snippets
 export const getContextSnippets = async (
@@ -53,25 +53,27 @@ export const getContextSnippets = async (
     const response = await fetch(
       `https://api.pinecone.io/assistants/${assistantId}/context-snippets`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Api-Key': apiKey,
+          "Content-Type": "application/json",
+          "Api-Key": apiKey
         },
         body: JSON.stringify({
-          query,
-        }),
+          query
+        })
       }
-    );
+    )
 
     if (!response.ok) {
-      throw new Error(`Failed to retrieve context snippets: ${response.statusText}`);
+      throw new Error(
+        `Failed to retrieve context snippets: ${response.statusText}`
+      )
     }
 
-    const data = await response.json();
-    return data;
+    const data = await response.json()
+    return data
   } catch (error) {
-    console.error('Error retrieving context snippets:', error);
-    throw error;
+    console.error("Error retrieving context snippets:", error)
+    throw error
   }
-}; 
+}

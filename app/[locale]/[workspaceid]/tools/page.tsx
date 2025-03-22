@@ -1,73 +1,126 @@
+"use client"
+
 import { FC, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
 
-interface ToolsPageProps {}
+interface Props {}
 
-const ToolsPage: FC<ToolsPageProps> = () => {
-  const [status, setStatus] = useState<string | null>(null);
+const Tools: FC<Props> = () => {
+  const [selectedTab, setSelectedTab] = useState("text")
+  const [text, setText] = useState("")
+  const [chunks, setChunks] = useState<string[]>([])
 
-  const checkPineconeStatus = async () => {
-    try {
-      const response = await fetch('/api/pinecone');
-      const data = await response.json();
-      setStatus(`Status: ${data.status}`);
-    } catch (error) {
-      setStatus('Error checking Pinecone status');
-      console.error(error);
+  const handleTextSubmit = () => {
+    const words = text.split(" ")
+    const chunkSize = 3
+    const newChunks = []
+
+    for (let i = 0; i < words.length; i += chunkSize) {
+      const chunk = words.slice(i, i + chunkSize).join(" ")
+      newChunks.push(chunk)
     }
-  };
+
+    setChunks(newChunks)
+  }
 
   return (
-    <div className="flex size-full flex-col items-center justify-center p-6">
-      <div className="w-full max-w-xl">
-        <h1 className="mb-6 text-2xl font-bold">JamesBot Knowledge System</h1>
-        
-        <Card className="mb-6 w-full">
-          <CardHeader>
-            <CardTitle>Pinecone Integration Status</CardTitle>
-            <CardDescription>
-              JamesBot uses Pinecone to provide answers based on your knowledge database.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4 text-sm text-gray-700">
-              The Pinecone integration is configured securely on the server. No API keys are exposed to users.
-              Administrators can update the Pinecone configuration through environment variables.
-            </p>
-            <div className="flex items-center space-x-2">
-              <Button onClick={checkPineconeStatus} variant="outline">
-                Check Pinecone Status
-              </Button>
-              {status && (
-                <span className="text-sm font-medium">{status}</span>
-              )}
-            </div>
-          </CardContent>
-          <CardFooter>
-            <p className="text-xs text-gray-500">
-              To update Pinecone settings, please contact an administrator.
-            </p>
-          </CardFooter>
-        </Card>
-        
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>Add Knowledge</CardTitle>
-            <CardDescription>
-              Upload documents to expand JamesBot's knowledge base.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-700">
-              Knowledge management is handled through the Pinecone dashboard. Contact an administrator
-              to add or update the knowledge base.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+    <div className="flex h-full flex-col space-y-4 p-4">
+      <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+        <TabsList>
+          <TabsTrigger value="text">Text</TabsTrigger>
+          <TabsTrigger value="files">Files</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="text">
+          <div className="grid gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Text</CardTitle>
+                <CardDescription>
+                  Enter text that you&apos;d like to process.
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent>
+                <div className="grid gap-4">
+                  <div className="grid gap-2">
+                    <Label>Text</Label>
+                    <Textarea
+                      placeholder="Enter your text here..."
+                      value={text}
+                      onChange={e => setText(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+
+              <CardFooter>
+                <Button onClick={handleTextSubmit}>Process</Button>
+              </CardFooter>
+            </Card>
+
+            {chunks.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Results</CardTitle>
+                  <CardDescription>
+                    Here are your processed results.
+                  </CardDescription>
+                </CardHeader>
+
+                <CardContent>
+                  <div className="grid gap-4">
+                    {chunks.map((chunk, index) => (
+                      <div key={index} className="grid gap-2">
+                        <Label>Chunk {index + 1}</Label>
+                        <Input value={chunk} readOnly />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="files">
+          <Card>
+            <CardHeader>
+              <CardTitle>Files</CardTitle>
+              <CardDescription>
+                Upload files that you&apos;d like to process.
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent>
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label>Files</Label>
+                  <Input type="file" multiple />
+                </div>
+              </div>
+            </CardContent>
+
+            <CardFooter>
+              <Button>Process</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
 
-export default ToolsPage 
+export default Tools

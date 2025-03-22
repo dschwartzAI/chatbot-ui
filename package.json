@@ -23,7 +23,8 @@
     "db-types": "supabase gen types typescript --local > supabase/types.ts",
     "db-pull": "supabase db remote commit",
     "db-push": "supabase db push",
-    "test": "jest"
+    "test": "jest",
+    "setup-vector-store": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} scripts/setup-openai-vector-store.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.18.0",
@@ -71,6 +72,7 @@
     "cmdk": "^0.2.0",
     "d3-dsv": "^2.0.0",
     "date-fns": "^2.30.0",
+    "dotenv": "^16.4.7",
     "endent": "^2.1.0",
     "gpt-tokenizer": "^2.1.2",
     "i18next": "^23.7.16",

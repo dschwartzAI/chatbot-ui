@@ -1,8 +1,5 @@
 import { ContentType } from "@/types"
-import {
-  IconMessage,
-  IconBolt
-} from "@tabler/icons-react"
+import { IconMessage, IconBolt } from "@tabler/icons-react"
 import { FC } from "react"
 import { TabsList } from "../ui/tabs"
 import { WithTooltip } from "../ui/with-tooltip"
@@ -26,7 +23,7 @@ export const SidebarSwitcher: FC<SidebarSwitcherProps> = ({
           contentType="chats"
           onContentTypeChange={onContentTypeChange}
         />
-        
+
         <SidebarSwitchItem
           icon={<IconBolt size={SIDEBAR_ICON_SIZE} />}
           contentType="tools"

@@ -83,7 +83,9 @@ export const ChatItem: FC<ChatItemProps> = ({ chat }) => {
       ) : (
         <WithTooltip
           display={<div>JamesBot</div>}
-          trigger={<ModelIcon provider={MODEL_DATA?.provider} height={30} width={30} />}
+          trigger={
+            <ModelIcon provider={MODEL_DATA?.provider} height={30} width={30} />
+          }
         />
       )}
 
