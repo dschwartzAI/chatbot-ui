@@ -1,1 +1,9 @@
-export type ContentType = "chats" | "tools"
+export type ContentType =
+  | "chats"
+  | "presets"
+  | "prompts"
+  | "files"
+  | "collections"
+  | "assistants"
+  | "tools"
+  | "models"

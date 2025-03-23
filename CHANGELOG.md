@@ -26,7 +26,8 @@
 - Fixed TypeScript errors in UI components
   - Corrected logical OR operators incorrectly used within includes() methods in useSelectFileHandler.tsx
   - Fixed incorrect window.prompt() parameter in message-codeblock.tsx
-  - Resolved "This kind of expression is always truthy" TypeScript errors that were preventing Vercel deployment
+  - Updated ContentType type definition to include all content types used in the application
+  - Fixed "This kind of expression is always truthy" TypeScript errors that were preventing Vercel deployment
 
 ### Changed
 - Supabase Configuration Updates

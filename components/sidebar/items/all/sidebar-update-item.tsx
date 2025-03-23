@@ -162,7 +162,8 @@ export const SidebarUpdateItem: FC<SidebarUpdateItemProps> = ({
         }
 
         const fetchDataFunction = fetchDataFunctions[contentType]
-        if (!fetchDataFunction) return
+        if (!fetchDataFunction || typeof fetchDataFunction !== "function")
+          return
         await fetchDataFunction(item.id)
       }
 
@@ -199,7 +200,10 @@ export const SidebarUpdateItem: FC<SidebarUpdateItemProps> = ({
     models: null
   }
 
-  const fetchDataFunctions = {
+  // Define a type for the fetch data function
+  type FetchDataFunction = ((id: string) => Promise<void>) | null
+
+  const fetchDataFunctions: Record<ContentType, FetchDataFunction> = {
     chats: null,
     presets: null,
     prompts: null,
