@@ -204,9 +204,8 @@ export async function POST(request: Request) {
       stream: true
     })
 
-    const stream = OpenAIStream(secondResponse)
-
-    return new StreamingTextResponse(stream)
+    // Convert the response into a friendly text-stream with type assertion
+    return new StreamingTextResponse(OpenAIStream(secondResponse as any))
   } catch (error: any) {
     console.error(error)
     const errorMessage = error.error?.message || "An unexpected error occurred"
