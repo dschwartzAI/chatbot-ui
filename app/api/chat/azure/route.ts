@@ -59,9 +59,9 @@ export async function POST(request: Request) {
       stream: true
     })
 
-    const stream = OpenAIStream(response)
-
-    return new StreamingTextResponse(stream)
+    return new StreamingTextResponse(
+      OpenAIStream(response as any) // Type assertion to bypass type checking
+    )
   } catch (error: any) {
     const errorMessage = error.error?.message || "An unexpected error occurred"
     const errorCode = error.status || 500

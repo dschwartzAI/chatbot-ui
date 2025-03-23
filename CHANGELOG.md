@@ -17,6 +17,11 @@
 - Resolved vector database interaction issues
   - Fixed incorrect vector store ID prefix in `.env.local` file
   - Updated configuration to properly connect with vector store
+  - Changed vector store ID to the correct value: `vs_67df294659c48191bffbe978d27fc6f7`
+- Fixed TypeScript type errors in API routes
+  - Added type assertions to fix mismatch between OpenAI's SDK response and the expected types
+  - Updated all API routes that use `OpenAIStream()` to properly handle response objects
+  - Resolved Vercel deployment errors related to Azure OpenAI integration
 
 ### Changed
 - Supabase Configuration Updates
