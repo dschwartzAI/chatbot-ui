@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+### ⚠️ Security
+- Detected exposed Supabase Service Role JWT in repository
+  - **COMPLETED ACTIONS**: 
+    1. ✅ Rotated Supabase JWT keys
+    2. ✅ Updated environment variables with new keys
+    3. ✅ Created new migration file without hardcoded credentials
+    4. ✅ Enhanced `.gitignore` to prevent future token exposure
+    5. ✅ Added additional security patterns for Supabase files
+  - Added security documentation for handling sensitive credentials
+  - Verified `.env.local` is properly gitignored
+
 ### Fixed
 - Resolved vector database interaction issues
   - Fixed incorrect vector store ID prefix in `.env.local` file
