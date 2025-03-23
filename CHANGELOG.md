@@ -23,9 +23,10 @@
   - Updated all API routes that use `OpenAIStream()` to properly handle response objects
   - Fixed additional type error in the tools route handler
   - Resolved Vercel deployment errors related to Azure OpenAI integration
-- Fixed TypeScript error in file handler component
+- Fixed TypeScript errors in UI components
   - Corrected logical OR operators incorrectly used within includes() methods in useSelectFileHandler.tsx
-  - Resolved "This kind of expression is always truthy" TypeScript error that was preventing Vercel deployment
+  - Fixed incorrect window.prompt() parameter in message-codeblock.tsx
+  - Resolved "This kind of expression is always truthy" TypeScript errors that were preventing Vercel deployment
 
 ### Changed
 - Supabase Configuration Updates
